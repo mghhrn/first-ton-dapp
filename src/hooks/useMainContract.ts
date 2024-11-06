@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { MainContract } from "../contracts/MainContract";
 import { useTonClient } from "./useTonClient";
 import { useAsyncInitialize } from "./useAsyncInitialize";
-import { Address, OpenedContract } from "ton-core";
+import { Address, OpenedContract, toNano } from "ton-core";
+import { useTonConnect } from "./useTonConnect";
 
 export function useMainContract() {
     const client = useTonClient();
@@ -14,6 +15,10 @@ export function useMainContract() {
     }>();
 
     const [balance, setBalance] = useState<null | number>(0);
+
+    const { sender } = useTonConnect();
+
+    const sleep = (time: number) => new Promise((resolve) => setTimeout(resolve, time));
 
     const mainContract = useAsyncInitialize(async () => {
         if (!client) return;
@@ -35,6 +40,8 @@ export function useMainContract() {
                 owner_address: val.owner_address,
             });
             setBalance(balance.number);
+            await sleep(5000); // sleep 5 seconds and poll value again
+            getValue();
         }
         getValue();
     }, [mainContract]);
@@ -42,6 +49,15 @@ export function useMainContract() {
     return {
         contract_address: mainContract?.address.toString(),
         contract_balance: balance,
+        sendIncrement: () => {
+            return mainContract?.sendIncrement(sender, toNano(0.05), 3);
+        },
+        sendDeposit: () => {
+            return mainContract?.sendDeposit(sender, toNano("1"));
+        },
+        sendWithdrawalRequest: () => {
+            return mainContract?.sendWithdrawalRequest(sender, toNano("0.05"), toNano("0.7"));
+        },
         ...contractData,
     };
 }
