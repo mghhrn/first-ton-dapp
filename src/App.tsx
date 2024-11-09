@@ -1,91 +1,34 @@
-import './App.css';
+// App.jsx
+import React, { useState } from "react";
+import "./App.css";
 import { TonConnectButton } from '@tonconnect/ui-react';
-import { useMainContract } from './hooks/useMainContract';
-import { useTonConnect } from './hooks/useTonConnect';
-import { fromNano } from 'ton-core';
-import WebApp from '@twa-dev/sdk';
 
 function App() {
-  const {
-    contract_address,
-    counter_value,
-    contract_balance,
-    sendIncrement,
-    sendDeposit,
-    sendWithdrawalRequest,
-  } = useMainContract();
+  const [isWalletConnected, setWalletConnected] = useState(false);
+  const [projects, setProjects] = useState([
+    { id: 1, text: "Project 1", deadline: "2024-12-31" },
+    { id: 2, text: "Project 2", deadline: "2025-01-15" },
+    { id: 3, text: "Project 3", deadline: "2025-02-20" },
+  ]);
 
-  const { connected } = useTonConnect();
-
-  const showAlert = () => {
-    WebApp.showAlert('Hey there!');
+  const handleConnectWallet = () => {
+    setWalletConnected(true); // Simulate wallet connection
   };
 
   return (
-    <div>
-      <div>
+    <div className="App">
+      <header className="header">
+        <h1>FundApp</h1>
         <TonConnectButton />
-      </div>
-      <div>
-        <div className='Card'>
-          <b>{WebApp.platform}</b>
-          <br />
-          <b>Our contract Address</b>
-          <div className='Hint'>{contract_address?.slice(0, 30) + '...'}</div>
-          <b>Our contract Balance</b>
-          {contract_balance && (
-            <div className='Hint'>{fromNano(contract_balance)}</div>
-          )}
-        </div>
+      </header>
 
-        <div className='Card'>
-          <b>Counter Value</b>
-          <div>{counter_value ?? 'Loading...'}</div>
-        </div>
-
-        <a
-          onClick={() => {
-            showAlert();
-          }}
-        >
-          Show Alert
-        </a>
-
-        <br />
-
-        {connected && (
-          <a
-            onClick={() => {
-              sendIncrement();
-            }}
-          >
-            Increment
-          </a>
-        )}
-
-        <br />
-
-        {connected && (
-          <a
-            onClick={() => {
-              sendDeposit();
-            }}
-          >
-            Request deposit of 1 TON
-          </a>
-        )}
-
-        <br />
-
-        {connected && (
-          <a
-            onClick={() => {
-              sendWithdrawalRequest();
-            }}
-          >
-            Request 0.7 withdrawal
-          </a>
-        )}
+      <div className="card-container">
+        {projects.map((project) => (
+          <div key={project.id} className="card">
+            <h2>{project.text}</h2>
+            <p>Deadline: {project.deadline}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
